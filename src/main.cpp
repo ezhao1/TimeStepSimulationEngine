@@ -13,6 +13,12 @@ struct SimulationState {
     float velocity_y;
 };
 
+struct Forces {
+    float acceleration_x;
+    float acceleration_y;
+    float drag;
+};
+
 std::ostream& operator<<(std::ostream& os, const SimulationState& sim_state) {
     os << "Position: " << sim_state.pos_x << ", " << sim_state.pos_y << "\n";
     os << "Velocity: " << sim_state.velocity_x << ", " << sim_state.velocity_y << "\n";
@@ -21,17 +27,15 @@ std::ostream& operator<<(std::ostream& os, const SimulationState& sim_state) {
 
 // State is updated using semi-explicit Euler integration, with velocity first and then position, for numerical stability.
 // Consistent ordering is required to preserve deterministic behavior.
-void semi_explicit_euler_with_drag_update(
+void semi_explicit_euler_update(
     SimulationState& state,
-    float acceleration_x,
-    float acceleration_y,
-    float drag,
+    const Forces& forces,
     float dt)
 {
-    state.velocity_x += dt * acceleration_x;
-    state.velocity_x *= 1 - dt * drag; // drag is opposite the direction of velocity
-    state.velocity_y += dt * acceleration_y;
-    state.velocity_y *= 1 - dt * drag;
+    state.velocity_x += dt * forces.acceleration_x;
+    state.velocity_x *= 1 - dt * forces.drag; // drag is opposite the direction of velocity
+    state.velocity_y += dt * forces.acceleration_y;
+    state.velocity_y *= 1 - dt * forces.drag;
     state.pos_x += dt * state.velocity_x;
     state.pos_y += dt * state.velocity_y;
 }
@@ -39,15 +43,13 @@ void semi_explicit_euler_with_drag_update(
 template<typename STATE>
 STATE run_simulation(
     STATE state, // passed by value
-    void(*update_func)(STATE&, float, float, float, float),
+    void(*update_func)(STATE&, const Forces&, float),
+    const Forces& forces,
     int steps,
-    float acceleration_x, // For now, assume constant acceleration
-    float acceleration_y,
-    float drag,
     float dt)
 {
     for (int i = 0; i < steps; i++) {
-        update_func(state, acceleration_x, acceleration_y, drag, dt);
+        update_func(state, forces, dt);
     }
 
     return state;
@@ -67,15 +69,21 @@ int main()
     constexpr float outside_force_acceleration_x = 0;
     constexpr float outside_force_acceleration_y = -9.8f; // Due to gravity
 
-    SimulationState initialState{
+    constexpr SimulationState initialState{
         .pos_x = 0,
         .pos_y = 0,
         .velocity_x = 50,
         .velocity_y = 100,
     };
 
-    SimulationState result_a = run_simulation(initialState, &semi_explicit_euler_with_drag_update, steps, outside_force_acceleration_x, outside_force_acceleration_y, drag, dt);
-    SimulationState result_b = run_simulation(initialState, &semi_explicit_euler_with_drag_update, steps, outside_force_acceleration_x, outside_force_acceleration_y, drag, dt);
+    constexpr Forces forces{
+        .acceleration_x = 0,
+        .acceleration_y = -9.8f, // Due to gravity
+        .drag = 0.1f,
+    };
+
+    SimulationState result_a = run_simulation(initialState, &semi_explicit_euler_update, forces, steps, dt);
+    SimulationState result_b = run_simulation(initialState, &semi_explicit_euler_update, forces, steps, dt);
 
     std::cout << result_a;
 
