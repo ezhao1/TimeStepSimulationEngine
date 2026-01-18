@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstring>
 #include <type_traits>
+#include <algorithm>
 
 // Note: position scalars are in units of meters, time is in unit of seconds
 struct SimulationState {
@@ -33,9 +34,9 @@ void semi_explicit_euler_update(
     float dt)
 {
     state.velocity_x += dt * forces.acceleration_x;
-    state.velocity_x *= 1 - dt * forces.drag; // drag is opposite the direction of velocity
+    state.velocity_x *= std::max(0.0f, 1 - dt * forces.drag); // Linear damping approximation (deterministic)
     state.velocity_y += dt * forces.acceleration_y;
-    state.velocity_y *= 1 - dt * forces.drag;
+    state.velocity_y *= std::max(0.0f, 1 - dt * forces.drag);
     state.pos_x += dt * state.velocity_x;
     state.pos_y += dt * state.velocity_y;
 }
