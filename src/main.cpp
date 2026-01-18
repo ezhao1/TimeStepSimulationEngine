@@ -32,11 +32,13 @@ void semi_explicit_euler_update(
     SimulationState& state,
     const Forces& forces,
     float dt)
+    noexcept
 {
+    float dampingFactor = std::max(0.0f, 1.0f - dt * forces.drag); // Linear damping approximation (deterministic)
     state.velocity_x += dt * forces.acceleration_x;
-    state.velocity_x *= std::max(0.0f, 1 - dt * forces.drag); // Linear damping approximation (deterministic)
+    state.velocity_x *= dampingFactor;
     state.velocity_y += dt * forces.acceleration_y;
-    state.velocity_y *= std::max(0.0f, 1 - dt * forces.drag);
+    state.velocity_y *= dampingFactor;
     state.pos_x += dt * state.velocity_x;
     state.pos_y += dt * state.velocity_y;
 }
