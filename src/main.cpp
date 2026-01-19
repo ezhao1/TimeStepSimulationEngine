@@ -8,6 +8,7 @@
 
 // Note: position scalars are in units of meters, time is in unit of seconds
 constexpr float fixed_dt = 0.01f;
+constexpr float max_frame_dt = 0.25f;
 
 struct SimulationState {
     float pos_x;
@@ -34,15 +35,25 @@ class Simulation {
         {};
 
         void advance(const Forces& forces, float frame_dt) noexcept {
+            frame_dt = std::max(frame_dt, max_frame_dt); // Clamp frame dt to prevent one hitch from triggering thousands of updates
+
             m_accumulator_seconds += frame_dt;
             while (m_accumulator_seconds >= fixed_dt) {
                 semi_explicit_euler_update(forces, fixed_dt);
                 m_accumulator_seconds -= fixed_dt;
+                m_step_count++;
             }
+
+            assert(m_accumulator_seconds >= 0.0f);
+            assert(m_accumulator_seconds < frame_dt);
         };
 
         const SimulationState& get_state() const {
             return m_state;
+        }
+
+        const int get_step_count() const {
+            return m_step_count;
         }
     private:
         // State is updated using semi-explicit Euler integration, with velocity first and then position, for numerical stability.
@@ -60,6 +71,7 @@ class Simulation {
 
         SimulationState m_state;
         float m_accumulator_seconds = 0.0f;
+        int m_step_count = 0;
 };
 
 std::ostream& operator<<(std::ostream& os, const SimulationState& sim_state) {
@@ -116,6 +128,7 @@ int main()
     std::vector<std::byte> bytes_b = serialize_simulation_state(result_b);
 
     assert(bytes_a == bytes_b);
+    assert(simulation1.get_step_count() == simulation2.get_step_count());
 
     std::cout << "Determinism check passed." << "\n";
 }
