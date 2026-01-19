@@ -30,13 +30,12 @@ SimulationState lerp(const SimulationState& a, const SimulationState& b, float a
 
 void run_simulation(
     Simulation& simulation,
-    const Forces& forces,
     const std::vector<float>& frames)
 {
     std::cout << simulation.get_curr_state();
 
     for (float frame : frames) {
-        simulation.advance(forces, frame);
+        simulation.advance(frame);
         
         const SimulationState& prev_state = simulation.get_prev_state();
         const SimulationState& curr_state = simulation.get_curr_state();
@@ -58,21 +57,26 @@ int main()
     constexpr float initial_pos_y = 0;
     constexpr float initial_vel_x = 50;
     constexpr float initial_vel_y = 100;
+    constexpr float acceleration_x = 0.0f;
+    constexpr float acceleration_y = -9.8f; // Due to gravity
+    constexpr float drag = 0.1f;
 
-    constexpr Forces forces{
-        .acceleration_x = 0,
-        .acceleration_y = -9.8f, // Due to gravity
-        .drag = 0.1f,
-    };
+    Model model(
+        acceleration_x,
+        acceleration_y,
+        drag
+    );
 
     std::vector<float> frames_a{ 0.06f, 0.11f, 0.13f, 0.05f, 0.15f };
     std::vector<float> frames_b{ 0.1f, 0.1f, 0.1f, 0.1f, 0.1f };
+    // TODO: maybe should not be passing in pointers due to ownership semantics, simulation should own its models
+    std::vector<const Model*> models{&model};
 
-    Simulation simulation_a(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y);
-    Simulation simulation_b(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y);
+    Simulation simulation_a(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y, models);
+    Simulation simulation_b(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y, models);
 
-    run_simulation(simulation_a, forces, frames_a);
-    run_simulation(simulation_b, forces, frames_b);
+    run_simulation(simulation_a, frames_a);
+    run_simulation(simulation_b, frames_b);
 
     const SimulationState& result_a = simulation_a.get_curr_state();
     const SimulationState& result_b = simulation_b.get_curr_state();
