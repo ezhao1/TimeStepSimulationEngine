@@ -56,7 +56,7 @@ void Simulation::advance(float frame_dt) noexcept {
         m_curr_state.velocity.y += m_fixed_dt * accumulated_forces.acceleration.y;
         m_curr_state.velocity.y *= dampingFactor;
         m_curr_state.position.x += m_fixed_dt * m_curr_state.velocity.x;
-        m_curr_state.position.x += m_fixed_dt * m_curr_state.velocity.y;
+        m_curr_state.position.y += m_fixed_dt * m_curr_state.velocity.y;
         m_accumulator_seconds -= m_fixed_dt;
         m_step_count++;
     }
