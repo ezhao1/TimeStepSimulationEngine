@@ -6,7 +6,7 @@
 #include "model.h"
 #include <vector>
 #include <utility>
-#include "force_accumulator.h"
+#include "accumulated_forces.h"
 
 // Note: position scalars are in units of meters, time is in unit of seconds
 constexpr float max_frame_dt = 0.25f;
@@ -39,7 +39,7 @@ void Simulation::advance(float frame_dt) noexcept {
     while (m_accumulator_seconds >= m_fixed_dt) {
         m_prev_state = m_curr_state;
 
-        ForceAccumulator accumulated_forces{
+        AccumulatedForces accumulated_forces{
             .acceleration = { .x = 0, .y = 0 },
             .drag = 0,
         };
