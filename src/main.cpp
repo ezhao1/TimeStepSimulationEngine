@@ -35,7 +35,7 @@ class Simulation {
 
         void advance(const Forces& forces, float frame_dt) noexcept {
             m_accumulator_seconds += frame_dt;
-            while (m_accumulator_seconds >= 0) {
+            while (m_accumulator_seconds >= fixed_dt) {
                 semi_explicit_euler_update(forces, fixed_dt);
                 m_accumulator_seconds -= fixed_dt;
             }
@@ -59,7 +59,7 @@ class Simulation {
         }
 
         SimulationState m_state;
-        float m_accumulator_seconds = 0;
+        float m_accumulator_seconds = 0.0f;
 };
 
 std::ostream& operator<<(std::ostream& os, const SimulationState& sim_state) {
@@ -97,8 +97,8 @@ int main()
         .drag = 0.1f,
     };
 
-    std::vector<float> frames_a{ 0.06, 0.11, 0.13, 0.05, 0.15 };
-    std::vector<float> frames_b{ 0.1, 0.1, 0.1, 0.1, 0.1 };
+    std::vector<float> frames_a{ 0.06f, 0.11f, 0.13f, 0.05f, 0.15f };
+    std::vector<float> frames_b{ 0.1f, 0.1f, 0.1f, 0.1f, 0.1f };
 
     Simulation simulation1(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y);
     Simulation simulation2(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y);
