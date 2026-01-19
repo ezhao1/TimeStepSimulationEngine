@@ -35,7 +35,9 @@ class Simulation {
         {};
 
         void advance(const Forces& forces, float frame_dt) noexcept {
-            frame_dt = std::max(frame_dt, max_frame_dt); // Clamp frame dt to prevent one hitch from triggering thousands of updates
+            // Clamp frame dt to prevent one hitch from triggering thousands of updates
+            // Note: clamping trades real-time equivalence for stability
+            frame_dt = std::min(frame_dt, max_frame_dt);
 
             m_accumulator_seconds += frame_dt;
             while (m_accumulator_seconds >= fixed_dt) {
@@ -45,14 +47,14 @@ class Simulation {
             }
 
             assert(m_accumulator_seconds >= 0.0f);
-            assert(m_accumulator_seconds < frame_dt);
+            assert(m_accumulator_seconds < fixed_dt);
         };
 
-        const SimulationState& get_state() const {
+        const SimulationState& get_state() const noexcept {
             return m_state;
         }
 
-        const int get_step_count() const {
+        const int get_step_count() const noexcept {
             return m_step_count;
         }
     private:
