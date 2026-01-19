@@ -10,21 +10,25 @@
 #include "simulation/forces.h"
 
 std::ostream& operator<<(std::ostream& os, const SimulationState& sim_state) {
-    os << "Position: " << sim_state.pos_x << ", " << sim_state.pos_y << "\n";
-    os << "Velocity: " << sim_state.velocity_x << ", " << sim_state.velocity_y << "\n";
+    os << "Position: " << sim_state.position.x << ", " << sim_state.position.y << "\n";
+    os << "Velocity: " << sim_state.velocity.x << ", " << sim_state.velocity.y << "\n";
     return os;
 }
 
 SimulationState lerp(const SimulationState& a, const SimulationState& b, float alpha) {
-    float d_pos_x = b.pos_x - a.pos_x;
-    float d_pos_y = b.pos_y - a.pos_y;
-    float d_vel_x = b.velocity_x - a.velocity_x;
-    float d_vel_y = b.velocity_y - a.velocity_y;
+    float d_pos_x = b.position.x - a.position.x;
+    float d_pos_y = b.position.y - a.position.y;
+    float d_vel_x = b.velocity.x - a.velocity.x;
+    float d_vel_y = b.velocity.y - a.velocity.y;
     return SimulationState{
-        .pos_x = a.pos_x + (alpha * d_pos_x),
-        .pos_y = a.pos_y + (alpha * d_pos_y),
-        .velocity_x = a.velocity_x + (alpha * d_vel_x),
-        .velocity_y = a.velocity_y + (alpha * d_vel_y),
+        .position = {
+            .x = a.position.x + (alpha * d_pos_x),
+            .y = a.position.y + (alpha * d_pos_y),
+        },
+        .velocity = {
+            .x = a.velocity.x + (alpha * d_vel_x),
+            .y = a.velocity.y + (alpha * d_vel_y),
+        },
     };
 }
 

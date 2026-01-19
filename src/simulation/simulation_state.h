@@ -1,8 +1,7 @@
 #pragma once
+#include "vec2.h"
 
 struct SimulationState {
-    float pos_x;
-    float pos_y;
-    float velocity_x;
-    float velocity_y;
+    Vec2 position;
+    Vec2 velocity;
 };

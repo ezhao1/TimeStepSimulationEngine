@@ -1,7 +1,7 @@
 #pragma once
+#include "vec2.h"
 
 struct Forces {
-    float acceleration_x;
-    float acceleration_y;
+    Vec2 acceleration;
     float drag;
 };
