@@ -1,5 +1,6 @@
 #pragma once
 #include "forces.h"
+#include "force_accumulator.h"
 #include "simulation_state.h"
 
 class Model {
@@ -10,7 +11,7 @@ class Model {
             float drag
         ) noexcept;
 
-        void contribute(Forces &forces, float dt) const noexcept;
+        void contribute(ForceAccumulator &forces) const noexcept;
     private:
         const Forces m_forces;
 };

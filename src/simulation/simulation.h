@@ -11,7 +11,8 @@ class Simulation {
             float pos_y,
             float velocity_x,
             float velocity_y,
-            std::vector<const Model> models
+            float fixed_dt,
+            std::vector<Model> models
         ) noexcept;
         void advance(float frame_dt) noexcept;
         const SimulationState& get_curr_state() const noexcept;
@@ -21,7 +22,8 @@ class Simulation {
     private:
         SimulationState m_prev_state;
         SimulationState m_curr_state;
-        const std::vector<const Model> m_models;
+        const std::vector<Model> m_models;
         float m_accumulator_seconds = 0.0f;
         int m_step_count = 0;
+        const float m_fixed_dt;
 };

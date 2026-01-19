@@ -60,6 +60,7 @@ int main()
     constexpr float acceleration_x = 0.0f;
     constexpr float acceleration_y = -9.8f; // Due to gravity
     constexpr float drag = 0.1f;
+    constexpr float fixed_dt = 0.01f;
 
     Model model(
         acceleration_x,
@@ -69,10 +70,10 @@ int main()
 
     std::vector<float> frames_a{ 0.06f, 0.11f, 0.13f, 0.05f, 0.15f };
     std::vector<float> frames_b{ 0.1f, 0.1f, 0.1f, 0.1f, 0.1f };
-    std::vector<const Model> models{model};
+    std::vector<Model> models{model};
 
-    Simulation simulation_a(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y, models);
-    Simulation simulation_b(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y, models);
+    Simulation simulation_a(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y, fixed_dt, models);
+    Simulation simulation_b(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y, fixed_dt, models);
 
     run_simulation(simulation_a, frames_a);
     run_simulation(simulation_b, frames_b);
