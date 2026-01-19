@@ -59,7 +59,7 @@ int main()
     constexpr float initial_vel_y = 100;
     constexpr float acceleration_x = 0.0f;
     constexpr float acceleration_y = -9.8f; // Due to gravity
-    constexpr float drag = 0.01f;
+    constexpr float drag = 0.01f; // Per fixed dt time step
     constexpr float fixed_dt = 0.01f;
 
     Model model(
