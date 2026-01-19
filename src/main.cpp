@@ -7,6 +7,8 @@
 #include <algorithm>
 
 // Note: position scalars are in units of meters, time is in unit of seconds
+constexpr float fixed_dt = 0.01f;
+
 struct SimulationState {
     float pos_x;
     float pos_y;
@@ -20,42 +22,60 @@ struct Forces {
     float drag;
 };
 
+class Simulation {
+    public:
+        Simulation(float pos_x, float pos_y, float velocity_x, float velocity_y)
+            : m_state{
+                .pos_x = pos_x,
+                .pos_y = pos_y,
+                .velocity_x = velocity_x,
+                .velocity_y = velocity_y,
+            }
+        {};
+
+        void advance(const Forces& forces, float frame_dt) noexcept {
+            float target = m_accumulator + frame_dt;
+            while (m_accumulator < target) {
+                semi_explicit_euler_update(forces, fixed_dt);
+                m_accumulator += fixed_dt;
+            }
+        };
+
+        const SimulationState& get_state() {
+            return m_state;
+        }
+    private:
+        // State is updated using semi-explicit Euler integration, with velocity first and then position, for numerical stability.
+        // Consistent ordering is required to preserve deterministic behavior.
+        void semi_explicit_euler_update(const Forces& forces, float dt) noexcept
+        {
+            float dampingFactor = std::max(0.0f, 1.0f - dt * forces.drag); // Linear damping approximation (deterministic)
+            m_state.velocity_x += dt * forces.acceleration_x;
+            m_state.velocity_x *= dampingFactor;
+            m_state.velocity_y += dt * forces.acceleration_y;
+            m_state.velocity_y *= dampingFactor;
+            m_state.pos_x += dt * m_state.velocity_x;
+            m_state.pos_y += dt * m_state.velocity_y;
+        }
+
+        SimulationState m_state;
+        float m_accumulator = 0;
+};
+
 std::ostream& operator<<(std::ostream& os, const SimulationState& sim_state) {
     os << "Position: " << sim_state.pos_x << ", " << sim_state.pos_y << "\n";
     os << "Velocity: " << sim_state.velocity_x << ", " << sim_state.velocity_y << "\n";
     return os;
 }
 
-// State is updated using semi-explicit Euler integration, with velocity first and then position, for numerical stability.
-// Consistent ordering is required to preserve deterministic behavior.
-void semi_explicit_euler_update(
-    SimulationState& state,
+void run_simulation(
+    Simulation& simulation,
     const Forces& forces,
-    float dt)
-    noexcept
+    const std::vector<float>& frames)
 {
-    float dampingFactor = std::max(0.0f, 1.0f - dt * forces.drag); // Linear damping approximation (deterministic)
-    state.velocity_x += dt * forces.acceleration_x;
-    state.velocity_x *= dampingFactor;
-    state.velocity_y += dt * forces.acceleration_y;
-    state.velocity_y *= dampingFactor;
-    state.pos_x += dt * state.velocity_x;
-    state.pos_y += dt * state.velocity_y;
-}
-
-template<typename STATE>
-STATE run_simulation(
-    STATE state, // passed by value
-    void(*update_func)(STATE&, const Forces&, float),
-    const Forces& forces,
-    int steps,
-    float dt)
-{
-    for (int i = 0; i < steps; i++) {
-        update_func(state, forces, dt);
+    for (float frame : frames) {
+        simulation.advance(forces, frame);
     }
-
-    return state;
 }
 
 std::vector<std::byte> serialize_simulation_state(const SimulationState& state) {
@@ -66,18 +86,10 @@ std::vector<std::byte> serialize_simulation_state(const SimulationState& state) 
 
 int main()
 {
-    constexpr int steps = 1000;
-    constexpr float dt = 0.01f;
-    constexpr float drag = 0.1f;
-    constexpr float outside_force_acceleration_x = 0;
-    constexpr float outside_force_acceleration_y = -9.8f; // Due to gravity
-
-    constexpr SimulationState initialState{
-        .pos_x = 0,
-        .pos_y = 0,
-        .velocity_x = 50,
-        .velocity_y = 100,
-    };
+    constexpr float initial_pos_x = 0;
+    constexpr float initial_pos_y = 0;
+    constexpr float initial_vel_x = 50;
+    constexpr float initial_vel_y = 100;
 
     constexpr Forces forces{
         .acceleration_x = 0,
@@ -85,8 +97,17 @@ int main()
         .drag = 0.1f,
     };
 
-    SimulationState result_a = run_simulation(initialState, &semi_explicit_euler_update, forces, steps, dt);
-    SimulationState result_b = run_simulation(initialState, &semi_explicit_euler_update, forces, steps, dt);
+    std::vector<float> frames_a{ 6, 11, 13 };
+    std::vector<float> frames_b{ 10, 10, 10 };
+
+    Simulation simulation1(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y);
+    Simulation simulation2(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y);
+
+    run_simulation(simulation1, forces, frames_a);
+    run_simulation(simulation2, forces, frames_b);
+
+    const SimulationState& result_a = simulation1.get_state();
+    const SimulationState& result_b = simulation2.get_state();
 
     std::cout << result_a;
 
