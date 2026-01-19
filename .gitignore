@@ -1,0 +1,24 @@
+# Default compiler output
+a.out
+
+# Linux / macOS executables (no extension)
+*.out
+*.exe
+
+# Object files
+*.o
+*.obj
+
+# Static and shared libraries
+*.a
+*.so
+*.dylib
+*.dll
+
+# Debug symbols
+*.dSYM/
+
+# Build directories
+build/
+bin/
+cmake-build-*/
