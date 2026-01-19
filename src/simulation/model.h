@@ -10,7 +10,7 @@ class Model {
             float drag
         ) noexcept;
 
-        void apply(SimulationState& state, float dt) const noexcept;
+        void contribute(Forces &forces, float dt) const noexcept;
     private:
         const Forces m_forces;
 };

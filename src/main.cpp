@@ -69,8 +69,7 @@ int main()
 
     std::vector<float> frames_a{ 0.06f, 0.11f, 0.13f, 0.05f, 0.15f };
     std::vector<float> frames_b{ 0.1f, 0.1f, 0.1f, 0.1f, 0.1f };
-    // TODO: maybe should not be passing in pointers due to ownership semantics, simulation should own its models
-    std::vector<const Model*> models{&model};
+    std::vector<const Model> models{model};
 
     Simulation simulation_a(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y, models);
     Simulation simulation_b(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y, models);

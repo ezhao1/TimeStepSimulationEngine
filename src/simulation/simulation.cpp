@@ -16,7 +16,7 @@ Simulation::Simulation(
     float pos_y,
     float velocity_x,
     float velocity_y,
-    std::vector<const Model*> models) noexcept
+    std::vector<const Model> models) noexcept
     : m_curr_state{
         .pos_x = pos_x,
         .pos_y = pos_y,
@@ -40,10 +40,26 @@ void Simulation::advance(float frame_dt) noexcept {
     m_accumulator_seconds += frame_dt;
     while (m_accumulator_seconds >= fixed_dt) {
         m_prev_state = m_curr_state;
-        // TODO: think about order here - should we apply all the accelerations first together, and then drags together?
-        for (const Model* model : m_models) {
-            model->apply(m_curr_state, fixed_dt);
+
+        Forces accumulated_forces{
+            .acceleration_x = 0,
+            .acceleration_y = 0,
+            .drag = 0,
+        };
+
+        for (const Model model : m_models) {
+            model.contribute(accumulated_forces, fixed_dt);
         }
+
+        // State is updated using semi-explicit Euler integration, with velocity first and then position, for numerical stability.
+        // Consistent ordering is required to preserve deterministic behavior.
+        float dampingFactor = std::max(0.0f, 1.0f - fixed_dt * accumulated_forces.drag); // Linear damping approximation (deterministic)
+        m_curr_state.velocity_x += fixed_dt * accumulated_forces.acceleration_x;
+        m_curr_state.velocity_x *= dampingFactor;
+        m_curr_state.velocity_y += fixed_dt * accumulated_forces.acceleration_y;
+        m_curr_state.velocity_y *= dampingFactor;
+        m_curr_state.pos_x += fixed_dt * m_curr_state.velocity_x;
+        m_curr_state.pos_y += fixed_dt * m_curr_state.velocity_y;
         m_accumulator_seconds -= fixed_dt;
         m_step_count++;
     }
