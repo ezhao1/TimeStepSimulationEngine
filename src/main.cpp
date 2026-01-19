@@ -15,13 +15,34 @@ std::ostream& operator<<(std::ostream& os, const SimulationState& sim_state) {
     return os;
 }
 
+SimulationState lerp(const SimulationState& a, const SimulationState& b, float alpha) {
+    float d_pos_x = b.pos_x - a.pos_x;
+    float d_pos_y = b.pos_y - a.pos_y;
+    float d_vel_x = b.velocity_x - a.velocity_x;
+    float d_vel_y = b.velocity_y - a.velocity_y;
+    return SimulationState{
+        .pos_x = a.pos_x + (alpha * d_pos_x),
+        .pos_y = a.pos_y + (alpha * d_pos_y),
+        .velocity_x = a.velocity_x + (alpha * d_vel_x),
+        .velocity_y = a.velocity_y + (alpha * d_vel_y),
+    };
+}
+
 void run_simulation(
     Simulation& simulation,
     const Forces& forces,
     const std::vector<float>& frames)
 {
+    std::cout << simulation.get_curr_state();
+
     for (float frame : frames) {
         simulation.advance(forces, frame);
+        
+        const SimulationState& prev_state = simulation.get_prev_state();
+        const SimulationState& curr_state = simulation.get_curr_state();
+        const float alpha = simulation.get_alpha();
+
+        std::cout << lerp(prev_state, curr_state, alpha);
     }
 }
 
@@ -53,8 +74,8 @@ int main()
     run_simulation(simulation_a, forces, frames_a);
     run_simulation(simulation_b, forces, frames_b);
 
-    const SimulationState& result_a = simulation_a.get_state();
-    const SimulationState& result_b = simulation_b.get_state();
+    const SimulationState& result_a = simulation_a.get_curr_state();
+    const SimulationState& result_b = simulation_b.get_curr_state();
 
     std::cout << result_a;
 
