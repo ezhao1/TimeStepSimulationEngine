@@ -114,14 +114,14 @@ int main()
     std::vector<float> frames_a{ 0.06f, 0.11f, 0.13f, 0.05f, 0.15f };
     std::vector<float> frames_b{ 0.1f, 0.1f, 0.1f, 0.1f, 0.1f };
 
-    Simulation simulation1(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y);
-    Simulation simulation2(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y);
+    Simulation simulation_a(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y);
+    Simulation simulation_b(initial_pos_x, initial_pos_y, initial_vel_x, initial_vel_y);
 
-    run_simulation(simulation1, forces, frames_a);
-    run_simulation(simulation2, forces, frames_b);
+    run_simulation(simulation_a, forces, frames_a);
+    run_simulation(simulation_b, forces, frames_b);
 
-    const SimulationState& result_a = simulation1.get_state();
-    const SimulationState& result_b = simulation2.get_state();
+    const SimulationState& result_a = simulation_a.get_state();
+    const SimulationState& result_b = simulation_b.get_state();
 
     std::cout << result_a;
 
@@ -130,7 +130,7 @@ int main()
     std::vector<std::byte> bytes_b = serialize_simulation_state(result_b);
 
     assert(bytes_a == bytes_b);
-    assert(simulation1.get_step_count() == simulation2.get_step_count());
+    assert(simulation_a.get_step_count() == simulation_b.get_step_count());
 
     std::cout << "Determinism check passed." << "\n";
 }
