@@ -16,5 +16,5 @@ m_forces{
 void Model::contribute(ForceAccumulator &forces) const noexcept {
     forces.acceleration_x += m_forces.acceleration_x;
     forces.acceleration_y += m_forces.acceleration_y;
-    forces.damping_factor *= (1 - m_forces.drag);
+    forces.drag += m_forces.drag; // Additive drag
 };

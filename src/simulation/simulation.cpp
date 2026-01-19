@@ -46,7 +46,7 @@ void Simulation::advance(float frame_dt) noexcept {
         ForceAccumulator accumulated_forces{
             .acceleration_x = 0,
             .acceleration_y = 0,
-            .damping_factor = 1,
+            .drag = 0,
         };
 
         for (const Model& model : m_models) {
@@ -55,7 +55,7 @@ void Simulation::advance(float frame_dt) noexcept {
 
         // State is updated using semi-explicit Euler integration, with velocity first and then position, for numerical stability.
         // Consistent ordering is required to preserve deterministic behavior.
-        float dampingFactor = std::max(0.0f, accumulated_forces.damping_factor); // Linear damping approximation (deterministic)
+        float dampingFactor = std::max(0.0f, 1 - accumulated_forces.drag); // Linear damping approximation (deterministic)
         m_curr_state.velocity_x += m_fixed_dt * accumulated_forces.acceleration_x;
         m_curr_state.velocity_x *= dampingFactor;
         m_curr_state.velocity_y += m_fixed_dt * accumulated_forces.acceleration_y;
